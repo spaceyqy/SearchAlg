@@ -75,6 +75,8 @@ CSearchAlgDlg::CSearchAlgDlg(CWnd* pParent /*=NULL*/)
 	m_stepPixel = 5;
 	m_periodMS = 5;
 	m_routeAlpha = 90;
+	m_missionAreaFlag = false;
+	m_searchParamFlag = false;
 }
 
 //析构函数
@@ -652,14 +654,17 @@ void CSearchAlgDlg::OnBnClickedSetmissionarea()
 	UpdateData(TRUE);//将EditControl的值取出放入关联的Value变量中
 	if (m_LongtitudeStart < 0 || m_LatitudeStart < 0){//经纬度下溢异常
 		MessageBox(L"警告：起始经纬度不能小于0！");
+		m_missionAreaFlag = false;
 		return;
 	}
 	else if (m_longtitudeEnd > 180 || m_LatitudeEnd > 90){//经纬度上溢异常
 		MessageBox(L"警告：结束经纬度不能超出范围！");
+		m_missionAreaFlag = false;
 		return;
 	}
 	else if (m_longtitudeEnd - m_LongtitudeStart <= 0 || m_LatitudeEnd - m_LatitudeStart<=0){//起始经纬度小于结束经纬度
 		MessageBox(L"警告：结束经纬度小于或等于起始经纬度！");
+		m_missionAreaFlag = false;
 		return;
 	}
 	else{//正常情况，每次点击都在MissionArea产生新的坐标刻度
@@ -690,10 +695,11 @@ void CSearchAlgDlg::OnBnClickedSetmissionarea()
 		if ((m_longtitudeEnd - m_LongtitudeStart < (240 * 360 / (2 * PI*EARTHRADIUS))) || 
 								(m_LatitudeEnd - m_LatitudeStart < (240 * 360 / (2 * PI*EARTHRADIUS)))){
 			MessageBox(L"警告：任务区域边界不能小于240km！");
+			m_missionAreaFlag = false;
 			return;
 		}
 		
-
+		m_missionAreaFlag = true;
 		//产生主界面
 		Invalidate();//void Invalidate( BOOL bErase = TRUE );参数: bErase 决定了是否要在WM_PAINT消息前发送WM_ERASEBKGND
 		//也就是，在默认情况下（TRUE），先发送背景刷新消息，再刷新前景。而FALSE只刷新前景，也就是只触发OnPaint函数。
@@ -707,6 +713,7 @@ void CSearchAlgDlg::OnBnClickedSetsearchparam()
 	UpdateData(TRUE);
 	if (m_findProb <= 0 || m_findProb >= 1){//不允许发现概率等于0或1，只能接近
 		MessageBox(L"警告：发现概率输入错误！");
+		m_searchParamFlag = false;
 		return;
 	}
 	else{
@@ -714,7 +721,7 @@ void CSearchAlgDlg::OnBnClickedSetsearchparam()
 		//保留小数点后一位有效数字，并写入搜索宽度
 		m_searchWidth = floor(m_searchWidth*100.0f + 0.5) / 100.0f;//保留小数点后两位
 		UpdateData(FALSE);
-
+		m_searchParamFlag = true;
 	}
 }
 
@@ -722,6 +729,16 @@ void CSearchAlgDlg::OnBnClickedSetsearchparam()
 void CSearchAlgDlg::OnBnClickedBeginsearch()
 {
 	// TODO:  在此添加控件通知处理程序代码
+
+	//判断参数是否设置正确
+	if (false == m_missionAreaFlag ){
+		MessageBox(L"警告：未设定好任务区域！");
+		return;
+	}
+	if (false == m_searchParamFlag){
+		MessageBox(L"警告：未设定好搜索参数！");
+		return;
+	}
 
 	Invalidate();
 	UpdateWindow();
@@ -778,8 +795,8 @@ void CSearchAlgDlg::OnBnClickedBeginsearch()
 	else{
 		MessageBox(L"警告：未选择搜索模式！");
 	}
-	if (m_fPSetScreen.size() == 0)//如果并没有设定模式，则直接退出
-		return;
+	//if (m_fPSetScreen.size() == 0)//如果并没有设定模式，则直接退出
+	//	return;
 
 }
 
