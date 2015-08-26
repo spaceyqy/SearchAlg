@@ -572,7 +572,7 @@ void CSearchAlgDlg::GetFPSetSquare()
 	m_fPSetScreen.push_back(m_fPSetReal.back().CvtToCP_Square(m_ratioX, m_ratioY, m_xPadding, m_yPadding, centerX, centerY));//A0，进入点
 
 	//计算截止的k值
-	int k = -1;
+	/*int k = -1;
 	if (m_axisX / (2 * W) + 0.5 == ceil(m_axisX / (2 * W))){
 		k = int(floor(m_axisX / (2 * W)));
 	}
@@ -581,7 +581,9 @@ void CSearchAlgDlg::GetFPSetSquare()
 	}
 	else{
 		k = int(floor(m_axisX / (2 * W)));
-	}
+	}*/
+
+	int k = int(floor(1 + m_axisX / (2 * W)));
 
 	for (int i = 1; i <= k;i++)
 	{
@@ -742,7 +744,10 @@ void CSearchAlgDlg::OnBnClickedBeginsearch()
 
 	Invalidate();
 	UpdateWindow();
-
+	m_leakSweep = "";
+	m_doubleSweep = "";
+	UpdateData(FALSE);
+	
 	//启动定时器，开始演示搜索过程
 	SetTimer(ID_TIMER1, m_periodMS, NULL);
 	GetDlgItem(IDC_BeginSearch)->EnableWindow(FALSE);
@@ -763,7 +768,7 @@ void CSearchAlgDlg::OnBnClickedBeginsearch()
 
 		m_leakSweep.Format(L"%.2f %%", leakSweep);
 		m_doubleSweep.Format(L"%.2f %%", doubleSweep);
-		UpdateData(FALSE);
+		
 	}
 	else if (1 == m_searchMode.GetCurSel()){//方形搜索
 		//MessageBox(L"方形");
@@ -771,7 +776,7 @@ void CSearchAlgDlg::OnBnClickedBeginsearch()
 
 		double W = m_searchWidth;
 		//计算航行结束时循环节的个数k
-		int k = -1;
+		/*int k = -1;
 		if (m_axisX / (2 * W) + 0.5 == ceil(m_axisX / (2 * W))){
 			k = int(floor(m_axisX / (2 * W)));
 		}
@@ -780,7 +785,8 @@ void CSearchAlgDlg::OnBnClickedBeginsearch()
 		}
 		else{
 			k = int(floor(m_axisX / (2 * W)));
-		}
+		}*/
+		int k = int(floor(0.5 + m_axisX / (2 * W)));
 
 		//更新漏搜率和复搜率，注意原公式的c是点集剔除最后一个退出点后以及起始点的航点个数
 		double leakS = (1 - PI / 4)*pow((1 + W / 2), 2)*(m_fPSetScreen.size() - 2) / 2;
@@ -790,7 +796,6 @@ void CSearchAlgDlg::OnBnClickedBeginsearch()
 
 		m_leakSweep.Format(L"%.2f %%", leakSweep);
 		m_doubleSweep.Format(L"%.2f %%", doubleSweep);
-		UpdateData(FALSE);
 	}
 	else{
 		MessageBox(L"警告：未选择搜索模式！");
@@ -875,14 +880,17 @@ void CSearchAlgDlg::OnTimer(UINT_PTR nIDEvent)
 			KillTimer(ID_TIMER1);
 			m_nFPts = 0;
 			m_currPt = CPoint(0, 0);//重置飞行相关参数
+			UpdateData(FALSE);//将漏搜率和复搜率结果显示
 			return;
 		}
 
 		//产生GDI+的Graphics，注意获取hdc的方法
 		Gdiplus::Graphics myGraphics(pDC->m_hDC);
 		//使用GDI+产生含有一定透明度的笔刷和一定透明度的画笔
-		SolidBrush myBrush(Gdiplus::Color(m_routeAlpha, 237, 125, 49));//半透明的浅色搜索区域画刷
-		Gdiplus::Pen myPen(Gdiplus::Color(m_routeAlpha, 237, 125, 49), 3);//半透明浅色轮廓
+		//SolidBrush myBrush(Gdiplus::Color(m_routeAlpha, 237, 125, 49));//半透明的浅色搜索区域画刷
+		//Gdiplus::Pen myPen(Gdiplus::Color(m_routeAlpha, 237, 125, 49), 3);//半透明浅色轮廓
+		SolidBrush myBrush(Gdiplus::Color(m_routeAlpha, 255, 255, 255));//半透明的浅色搜索区域画刷
+		Gdiplus::Pen myPen(Gdiplus::Color(m_routeAlpha, 255, 255, 255), 3);//半透明浅色轮廓
 
 		pDC->MoveTo(m_currPt.x, m_currPt.y);
 
