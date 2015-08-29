@@ -75,6 +75,7 @@ CSearchAlgDlg::CSearchAlgDlg(CWnd* pParent /*=NULL*/)
 	m_stepPixel = 5;
 	m_periodMS = 5;
 	m_routeAlpha = 90;
+	m_areaColor = RGB(80, 126, 50);//初始化颜色
 	m_missionAreaFlag = false;
 	m_searchParamFlag = false;
 }
@@ -102,9 +103,9 @@ void CSearchAlgDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_SearchWidth, m_searchWidth);
 	DDX_Control(pDX, IDC_SearchMode, m_searchMode);
 	DDX_Text(pDX, IDC_XDivNum, m_xDivNum);
-	DDV_MinMaxUInt(pDX, m_xDivNum, 2, 8);
+	DDV_MinMaxUInt(pDX, m_xDivNum, 2, 10);
 	DDX_Text(pDX, IDC_YDivNum, m_yDivNum);
-	DDV_MinMaxUInt(pDX, m_yDivNum, 2, 8);
+	DDV_MinMaxUInt(pDX, m_yDivNum, 2, 10);
 	DDX_Text(pDX, IDC_LeakSweep, m_leakSweep);
 	DDX_Text(pDX, IDC_DoubleSweep, m_doubleSweep);
 }
@@ -572,16 +573,6 @@ void CSearchAlgDlg::GetFPSetSquare()
 	m_fPSetScreen.push_back(m_fPSetReal.back().CvtToCP_Square(m_ratioX, m_ratioY, m_xPadding, m_yPadding, centerX, centerY));//A0，进入点
 
 	//计算截止的k值
-	/*int k = -1;
-	if (m_axisX / (2 * W) + 0.5 == ceil(m_axisX / (2 * W))){
-		k = int(floor(m_axisX / (2 * W)));
-	}
-	else if (m_axisX / (2 * W) + 0.5>ceil(m_axisX / (2 * W))){
-		k = int(ceil(m_axisX / (2 * W)));
-	}
-	else{
-		k = int(floor(m_axisX / (2 * W)));
-	}*/
 
 	int k = int(floor(1 + m_axisX / (2 * W)));
 
@@ -776,17 +767,7 @@ void CSearchAlgDlg::OnBnClickedBeginsearch()
 
 		double W = m_searchWidth;
 		//计算航行结束时循环节的个数k
-		/*int k = -1;
-		if (m_axisX / (2 * W) + 0.5 == ceil(m_axisX / (2 * W))){
-			k = int(floor(m_axisX / (2 * W)));
-		}
-		else if (m_axisX / (2 * W) + 0.5>ceil(m_axisX / (2 * W))){
-			k = int(ceil(m_axisX / (2 * W)));
-		}
-		else{
-			k = int(floor(m_axisX / (2 * W)));
-		}*/
-		int k = int(floor(0.5 + m_axisX / (2 * W)));
+		int k = int(floor(1 + m_axisX / (2 * W)));
 
 		//更新漏搜率和复搜率，注意原公式的c是点集剔除最后一个退出点后以及起始点的航点个数
 		double leakS = (1 - PI / 4)*pow((1 + W / 2), 2)*(m_fPSetScreen.size() - 2) / 2;
@@ -820,18 +801,18 @@ void CSearchAlgDlg::OnBnClickedfpresult()
 	CString str;
 	for (size_t i = 0; i < m_fPSetReal.size(); i++){
 		if (i == 0){//航点的起始点
-			str.Format(L"起始点 : (%.1f,%.1f) \r\n", m_fPSetReal[i].x, m_fPSetReal[i].y);
+			str.Format(L"起始点 : (%.1f , %.1f) \r\n", m_fPSetReal[i].x, m_fPSetReal[i].y);
 			m_fpResDlg->m_fPResult.SetSel(m_fpResDlg->m_fPResult.GetWindowTextLengthW(), m_fpResDlg->m_fPResult.GetWindowTextLengthW());//选中最后一个位置
 			m_fpResDlg->m_fPResult.ReplaceSel(str);//用新文本替换最后一个位置
 			continue;
 		}
 		if (i == m_fPSetReal.size() - 1){//航点到了最后结束航点
-			str.Format(L"结束点 : (%.1f,%.1f)", m_fPSetReal[i].x, m_fPSetReal[i].y);
+			str.Format(L"结束点 : (%.1f , %.1f)", m_fPSetReal[i].x, m_fPSetReal[i].y);
 			m_fpResDlg->m_fPResult.SetSel(m_fpResDlg->m_fPResult.GetWindowTextLengthW(), m_fpResDlg->m_fPResult.GetWindowTextLengthW());//选中最后一个位置
 			m_fpResDlg->m_fPResult.ReplaceSel(str);//用新文本替换最后一个位置
 			break;
 		}
-		str.Format(L"P%d : (%.1f,%.1f) \r\n", i, m_fPSetReal[i].x, m_fPSetReal[i].y);
+		str.Format(L"P%d : (%.1f , %.1f) \r\n", i, m_fPSetReal[i].x, m_fPSetReal[i].y);
 		m_fpResDlg->m_fPResult.SetSel(m_fpResDlg->m_fPResult.GetWindowTextLengthW(), m_fpResDlg->m_fPResult.GetWindowTextLengthW());//选中最后一个位置
 		m_fpResDlg->m_fPResult.ReplaceSel(str);//用新文本替换最后一个位置
 	}
@@ -847,7 +828,7 @@ void CSearchAlgDlg::OnBnClickedfpresult()
 	}
 	//连接所有中心线
 	CPen *pPenGreen = new CPen();
-	pPenGreen->CreatePen(PS_SOLID, 2, RGB(80, 126, 50));
+	pPenGreen->CreatePen(PS_SOLID, 2, RGB(174, 90, 33));
 	pDC->SelectObject(pPenGreen);
 	for (size_t i = 0; i < m_fPSetScreen.size()-1; i++){
 		pDC->MoveTo(m_fPSetScreen[i].x, m_fPSetScreen[i].y);
@@ -889,8 +870,13 @@ void CSearchAlgDlg::OnTimer(UINT_PTR nIDEvent)
 		//使用GDI+产生含有一定透明度的笔刷和一定透明度的画笔
 		//SolidBrush myBrush(Gdiplus::Color(m_routeAlpha, 237, 125, 49));//半透明的浅色搜索区域画刷
 		//Gdiplus::Pen myPen(Gdiplus::Color(m_routeAlpha, 237, 125, 49), 3);//半透明浅色轮廓
-		SolidBrush myBrush(Gdiplus::Color(m_routeAlpha, 255, 255, 255));//半透明的浅色搜索区域画刷
-		Gdiplus::Pen myPen(Gdiplus::Color(m_routeAlpha, 255, 255, 255), 3);//半透明浅色轮廓
+		int areaR = GetRValue(m_areaColor);
+		int areaG = GetGValue(m_areaColor);
+		int areaB = GetBValue(m_areaColor);
+		SolidBrush myBrush(Gdiplus::Color(m_routeAlpha, areaR, areaG, areaB));//半透明的浅色搜索区域画刷
+		Gdiplus::Pen myPen(Gdiplus::Color(m_routeAlpha, areaR, areaG, areaB), 3);//半透明浅色轮廓
+		
+
 
 		pDC->MoveTo(m_currPt.x, m_currPt.y);
 
@@ -980,11 +966,13 @@ void CSearchAlgDlg::OnSetanime()
 	DlgAnime.m_periodMS = m_periodMS;
 	DlgAnime.m_pixelStep = m_stepPixel;
 	DlgAnime.m_routeAlpha = m_routeAlpha;
+	DlgAnime.m_color = m_areaColor;
 
 	if (IDOK == DlgAnime.DoModal()){//按下了ok键
 		m_stepPixel = DlgAnime.m_pixelStep;
 		m_periodMS = DlgAnime.m_periodMS;
 		m_routeAlpha = DlgAnime.m_routeAlpha;
+		m_areaColor = DlgAnime.m_color;
 	}
 
 }

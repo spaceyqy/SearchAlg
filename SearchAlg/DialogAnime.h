@@ -26,4 +26,8 @@ public:
 	afx_msg void OnBnClickedOk();
 	// 路径透明度，0-255表明全透-不透
 	int m_routeAlpha;
+	afx_msg void OnBnClickedSetareacolorbtn();
+	COLORREF m_color;
+	virtual BOOL OnInitDialog();
+	afx_msg void OnPaint();
 };

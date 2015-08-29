@@ -94,7 +94,8 @@ private:
 	CPoint m_currPt;//记录飞机所在点坐标值
 	int m_stepPixel;//每隔一个定时器间隔步进的像素点数
 	int m_periodMS;//动画绘制周期(ms)
-	int m_routeAlpha;//路径透明度，0-255
+	int m_routeAlpha;//区域透明度，0-255
+	COLORREF m_areaColor;//区域颜色
 	
 	bool m_missionAreaFlag;//是否成功生成任务区域
 	bool m_searchParamFlag;//是否成功设定搜索参数
